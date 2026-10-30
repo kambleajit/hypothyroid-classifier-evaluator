@@ -4,6 +4,7 @@ from pathlib import Path
 from html import escape
 
 import joblib
+import traceback
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -246,10 +247,23 @@ if test_data.empty:
 try:
     # Reuse training-time imputers, encoders, feature order, and scaler for evaluation.
     labels = encode_target(test_data[TARGET_COLUMN])
-    encoded, _ = prepare_features(test_data[preprocessing["raw_feature_names"]], preprocessing)
+    
+    # FIX: Create an independent mutable copy of the features slice
+    features_slice = test_data[preprocessing["raw_feature_names"]].copy()
+    
+    encoded, _ = prepare_features(features_slice, preprocessing)
+    
+    # Ensure the matrix buffer is explicitly marked as writable before scaling
+    if hasattr(encoded, 'values'):
+        encoded.values.flags.writeable = True
+    elif isinstance(encoded, np.ndarray):
+        encoded.flags.writeable = True
+        
     scaled = preprocessing["scaler"].transform(encoded)
 except Exception as error:
     st.error(f"Could not preprocess this CSV: {error}")
+    with st.expander("See full error logs and stacktrace"):
+        st.code(traceback.format_exc(), language="python")
     st.stop()
 
 results = {}

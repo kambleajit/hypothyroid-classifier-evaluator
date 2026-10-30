@@ -67,7 +67,7 @@ def encode_target(values: pd.Series) -> np.ndarray:  # Convert diagnosis categor
     labels = values.astype(str).str.strip().str.lower()  # Normalize string labels for comparison.
     numeric = pd.to_numeric(labels, errors="coerce")  # Also support test files with numeric targets.
     is_numeric = numeric.notna()  # Mark labels that parsed as numbers.
-    result = labels.ne("negative").astype(int).to_numpy()  # Treat every hypothyroid subtype as positive.
+    result = labels.ne("negative").astype(int).to_numpy().copy()  # Treat every hypothyroid subtype as positive.
     if is_numeric.any():  # Override the default mapping for numeric target values.
         result[is_numeric.to_numpy()] = (numeric[is_numeric] != 0).astype(int).to_numpy()  # Map zero to negative and nonzero to positive.
     return result  # Return labels in the order supplied.
