@@ -45,6 +45,8 @@ Metrics below are calculated on the held-out test split. `AUC` uses predicted po
 ## Run locally
 
 ```powershell
+conda create -n hypothyroid-env python=3.11 -y
+conda activate hypothyroid-env
 python -m pip install -r requirements.txt
 python train_models.py
 python -m streamlit run app.py
